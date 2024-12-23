@@ -1,4 +1,5 @@
 import socket
+import time
 
 
 if __name__ == '__main__':
@@ -10,6 +11,9 @@ if __name__ == '__main__':
     while True:
          data = conn.recv(1024)
          if not data:
+             time.sleep(0.5)  # чтобы не перегружать сервер
+             continue
+         if data == b'exit':
              break
          conn.send(data.upper())
 
