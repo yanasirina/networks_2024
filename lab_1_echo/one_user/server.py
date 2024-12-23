@@ -1,20 +1,41 @@
 import socket
-import time
 
 
-if __name__ == '__main__':
-    sock = socket.socket()
-    sock.bind(('', 9090))
-    sock.listen(1)
-    conn, addr = sock.accept()
+def start_server(host, port):
+    # Создаем сокет
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind((host, port))
+    server_socket.listen(1)
+
+    print(f"Сервер запущен на {host}:{port}")
+    print("Начало прослушивания порта...")
 
     while True:
-         data = conn.recv(1024)
-         if not data:
-             time.sleep(0.5)  # чтобы не перегружать сервер
-             continue
-         if data == b'exit':
-             break
-         conn.send(data.upper())
+        # Принимаем подключение от клиента
+        client_socket, client_address = server_socket.accept()
+        print(f"Подключение от клиента: {client_address}")
 
-    conn.close()
+        try:
+            while True:
+                # Получаем данные от клиента порциями по 1 КБ
+                data = client_socket.recv(1024)
+                if not data:
+                    # Если данных нет, значит клиент отключился
+                    print(f"Отключение клиента: {client_address}")
+                    break
+
+                # Выводим полученные данные и отправляем их обратно
+                print(f"Получены данные от клиента: {data.decode()}")
+                print("Отправка данных клиенту...")
+                client_socket.sendall(data)
+        finally:
+            client_socket.close()
+            print("Соединение с клиентом закрыто.")
+
+
+def stop_server():
+    print("Сервер остановлен.")
+
+
+if __name__ == "__main__":
+    start_server("127.0.0.1", 65432)
